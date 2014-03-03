@@ -1,0 +1,27 @@
+{
+  "name": "scrapers",
+  "version": "0.0.0",
+  "description": "none",
+  "main": "utahrealtorparser.js",
+  "dependencies": {
+    "cheerio": "~0.13.1",
+    "jsdom": "~0.10.1",
+    "zombie": "~2.0.0-alpha29",
+    "mongoose": "~3.8.8",
+    "request": "~2.33.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tewman/urscraper.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tewman/urscraper/issues"
+  },
+  "homepage": "https://github.com/tewman/urscraper"
+}
