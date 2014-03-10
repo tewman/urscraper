@@ -1,8 +1,8 @@
 {
   "name": "scrapers",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "none",
-  "main": "utahrealtorparser.js",
+  "main": "scraper.js",
   "dependencies": {
     "cheerio": "~0.13.1",
     "jsdom": "~0.10.1",
