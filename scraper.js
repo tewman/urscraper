@@ -84,7 +84,7 @@ function getLists(page){
 				if(listingsUrl){
 					var listingId = listingsUrl.substring(listingsUrl.lastIndexOf("/") + 1);					
 					var listingUrl = "http://www.utahrealestate.com" + listingsUrl;	
-				   	 browser.visit(listingUrl, { debug: false, runScripts: true, waitFor: 8000 }, function(err){
+				   	 browser.visit(listingUrl, { debug: false, runScripts: true, waitFor: 9000 }, function(err){
 						 browser.wait(function(){
 					   		 if(err){
 					   			 console.log("failed to load " + url);
