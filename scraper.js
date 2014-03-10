@@ -30,7 +30,7 @@ var numPages = 0;
 browser = new Browser();
 timeout = 10000;
 var url = "http://www.utahrealestate.com/search/public.search?accuracy=&geocoded=&box=&htype=&lat=&lng=&geolocation=&type=1&listprice1=&listprice2=&proptype=&state=ut&tot_bed1=&tot_bath1=&tot_sqf1=&dim_acres1=&yearblt1=&cap_garage1=&style=&o_style=4&opens=&accessibility=&o_accessibility=32&sort=listprice%20DESC";
-browser.visit(url, {debug: false, runScripts: false, waitFor: 6000}, function(){
+browser.visit(url, {debug: false, runScripts: true, waitFor: 6000}, function(){
 	var $ = cheerio.load(browser.html('body'), {
 		normalizeWhitespace: true
 	});	
@@ -62,7 +62,7 @@ function series(){
 function getLists(page){
 	console.log("LISTINGS FOR PAGE " + page);
 	var listUrl = url + "&page=" + page;	
-	browser.visit(listUrl, {debug: false, runScripts: false, waitFor: 3000}, function(){
+	browser.visit(listUrl, {debug: false, runScripts: true, waitFor: 3000}, function(){
 		var $$$ = cheerio.load(browser.html('body'), {
 			normalizeWhitespace: true
 		});
@@ -84,7 +84,7 @@ function getLists(page){
 				if(listingsUrl){
 					var listingId = listingsUrl.substring(listingsUrl.lastIndexOf("/") + 1);					
 					var listingUrl = "http://www.utahrealestate.com" + listingsUrl;	
-				   	 browser.visit(listingUrl, { debug: false, runScripts: false, waitFor: 7000 }, function(err){
+				   	 browser.visit(listingUrl, { debug: false, runScripts: true, waitFor: 7000 }, function(err){
 						 browser.wait(function(){
 					   		 if(err){
 					   			 console.log("failed to load " + url);
