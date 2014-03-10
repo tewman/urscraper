@@ -15,15 +15,15 @@ then(function(){
  //            console.log("pressed submit");
  //            console.log(browser.location);   
             var body = browser.html('body');            
-            $l =  cheerio.load(body);        
-            fs.writeFile('/Users/traviswinks/Sites/scrapers/tmp/test.html', browser.html('body'), function(err){
-                 if(err){
-                     console.log(err);   
-                 } else {
-                     console.log("file saved");
-                 }
-              });
-          console.log($l('#location').val());    
+            // $l =  cheerio.load(body);        
+//             fs.writeFile('/Users/traviswinks/Sites/scrapers/tmp/test.html', browser.html('body'), function(err){
+//                  if(err){
+//                      console.log(err);   
+//                  } else {
+//                      console.log("file saved");
+//                  }
+//               });
+//           console.log($l('#location').val());    
               
         // });
     

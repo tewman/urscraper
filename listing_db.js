@@ -76,7 +76,7 @@ var mongoose = require("mongoose");
 		        "hoaFee": Number,
 		        "homeType": String,
 		        "houseNumber": Number,
-		        "id": String,
+		        "mlsid": String,
 		        "inclusions": String,
 		        "interiorFeatures": String,
 		        "landscape": String,
@@ -163,16 +163,17 @@ var mongoose = require("mongoose");
 		        "year": Number,
 		        "zip": Number,
 		        "zoning": String
-		      }
+		      },
+			  { versionKey: false }
 	);
 	
 	listingSchema.methods.findByZip = function findByZip(thiszip){
 		return this.find({zip: thiszip});
 	};
 
-	var theListing = mongoose.model('Listing', listingSchema);
-	var theAgents = mongoose.model('Agent', agentsSchema);
-	var theBroker = mongoose.model('Broker', brokerSchema);
+	var theListing = mongoose.model('theListing', listingSchema);
+	var theAgents = mongoose.model('theAgent', agentsSchema);
+	var theBroker = mongoose.model('theBroker', brokerSchema);
 
 
 module.exports = {
