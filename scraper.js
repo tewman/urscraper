@@ -2,8 +2,8 @@ var Browser = require("zombie");
 var cheerio = require("cheerio");
 var mongoose = require('mongoose');
 
-//mongoose.connect('mongodb://tpUser:over8ed@ds033569.mongolab.com:33569/heroku_app22705925');
-mongoose.connect('mongodb://localhost/realestate');
+mongoose.connect('mongodb://tpUser:over8ed@ds033569.mongolab.com:33569/heroku_app22705925');
+//mongoose.connect('mongodb://localhost/realestate');
 var Schema = mongoose.Schema;
 var db = mongoose.connection;
 db.on('open', function(){
