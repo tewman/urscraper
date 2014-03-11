@@ -2,7 +2,8 @@ var Browser = require("zombie");
 var cheerio = require("cheerio");
 var mongoose = require('mongoose');
 
-mongoose.connect('mongodb://tpUser:over8ed@ds033569.mongolab.com:33569/heroku_app22705925');
+//mongoose.connect('mongodb://tpUser:over8ed@ds033569.mongolab.com:33569/heroku_app22705925');
+mongoose.connect('mongodb://localhost/realestate');
 var Schema = mongoose.Schema;
 var db = mongoose.connection;
 db.on('open', function(){
@@ -30,45 +31,70 @@ var numPages = 0;
 
 browser = new Browser();
 timeout = 10000;
-var url = "http://www.utahrealestate.com/search/public.search?accuracy=&geocoded=&box=&htype=&lat=&lng=&geolocation=&type=1&listprice1=&listprice2=&proptype=&state=ut&tot_bed1=&tot_bath1=&tot_sqf1=&dim_acres1=&yearblt1=&cap_garage1=&style=&o_style=4&opens=&accessibility=&o_accessibility=32&sort=listprice%20DESC";
 
 var command = process.argv[2];
+console.log("command: " + command)
 if(command == '-p' || command == '--page'){
 	page = Number(process.argv[3]);
-} else if(command == 'm' || command == '--mls'){
-	var mls = process.argv[3];
-	var listingUrl = "http://www.utahrealestate.com/report/public.single.report/report/detailed/listno/" + mls + "/scroll_to/" + mls;	
-   	 browser.visit(listingUrl, { debug: false, runScripts: false, waitFor: 9000 }, function(err){
+	start();
+} else if(command == '-m' || command == '--mls'){
+	var mls = Number(process.argv[3]);
+	var alistingUrl = "http://www.utahrealestate.com/report/public.single.report/report/detailed/listno/" + mls + "/scroll_to/" + mls;	
+	browser.location = alistingUrl;
+   	 browser.visit(alistingUrl, { debug: false, runScripts: false, waitFor: 15000 }, function(err){
 		 browser.wait(function(){
 	   		 if(err){
-	   			 console.log("failed to load " + url);
+	   			 console.log("failed to load " + alistingUrl);
 	   			 console.log(err);
 	   		 } else{
 	   	         var body = browser.html('body');
-				 console.log(listingUrl);						
-	   	 		 scrapeDetails(body, listingId, function(){	
-					 console.log("DONE SCRAPING FOR " + listingId);
+				 console.log(browser.location.toString());						
+	   	 		 scrapeDetails(body, mls, function(err){	
+					 if(err){
+						error = new theError()								 		
+				 		error.error = err;
+				 		error.mls = mls;
+				 		error.page = page;
+				 		error.save();
+				 		console.log(err);
+						console.log("Re-scrape " + mls);
+						process.exit(1);
+					 } else {
+					 	console.log("DONE SCRAPING FOR " + mls);
+				 	}
 					 //browser.close();//????????? free memory ??????????
 		   	     });
 	   		 }
 		 });				   		         
-   	 });
-} 
+   	 });	 
+} else if(command == '-h' || command == '--help' ){
+	console.log("-p or --page: Start on this page");
+	console.log("-m or --mls: Scrape this listing with the mls id");
+	console.log("-h or --help: This information");
+	process.exit();
+} else {
+	console.log("going to start");
+	start();
+}
 
+var url = "http://www.utahrealestate.com/search/public.search?accuracy=&geocoded=&box=&htype=&lat=&lng=&geolocation=&type=1&listprice1=&listprice2=&proptype=&state=ut&tot_bed1=&tot_bath1=&tot_sqf1=&dim_acres1=&yearblt1=&cap_garage1=&style=&o_style=4&opens=&accessibility=&o_accessibility=32&sort=listprice%20DESC";
 //start here
-browser.visit(url, {debug: false, runScripts: false, waitFor: 6000}, function(){
-	var $ = cheerio.load(browser.html('body'), {
-		normalizeWhitespace: true
-	});	
-	//page = 1;
-	numPages = $('#page-selector option').toArray().length;	
-	console.log(numPages);
-	series();
-});
+function start(){
+	console.log("instart");
+	var url = "http://www.utahrealestate.com/search/public.search?accuracy=&geocoded=&box=&htype=&lat=&lng=&geolocation=&type=1&listprice1=&listprice2=&proptype=&state=ut&tot_bed1=&tot_bath1=&tot_sqf1=&dim_acres1=&yearblt1=&cap_garage1=&style=&o_style=4&opens=&accessibility=&o_accessibility=32&sort=listprice%20DESC";
+	browser.visit(url, {debug: false, runScripts: false, waitFor: 6000}, function(){
+		var $ = cheerio.load(browser.html('body'), {
+			normalizeWhitespace: true
+		});	
+		numPages = $('#page-selector option').toArray().length;	
+		console.log('numPages: ' + numPages);
+		series(function(){});
+	});
+}
 
 
 //control flow pattern asyncronous loop
-function series(){
+function series(callback){
 	if(page <= numPages){
 		//for each list pages...
 		//run 100 seconds per page		
@@ -118,8 +144,18 @@ function getLists(page){
 					   		 } else{
 					   	         var body = browser.html('body');
 								 console.log(listingUrl);						
-					   	 		 scrapeDetails(body, listingId, function(){	
-									 console.log("DONE SCRAPING FOR " + listingId);
+					   	 		 scrapeDetails(body, listingId, function(err){	
+									 if(err){								 		
+				 						error = new theError()								 		
+				 				 		error.error = err;
+				 				 		error.mls = listingId;
+				 				 		error.page = page;
+				 				 		error.save();
+				 				 		console.log(err);
+										console.log("Re-scrape " + listingId);
+									 } else {
+									 	console.log("DONE SCRAPING FOR " + listingId);
+								 	}
 									 //browser.close();//????????? free memory ??????????
 						   	     });
 					   		 }
@@ -159,13 +195,8 @@ function scrapeDetails(body, listingId, callback) {
 		var proptype = someDetails[6].data;
 		var yearBuilt = someDetails[8].data;
 		var start = details.indexOf("<span>$");
-	} catch (e){
-		var error = new theError();
-		error.error = e;
-		error.mls = listingId;
-		error.save();
-		console.log(e);
-		callback();
+	} catch (err){		
+		callback(err);
 	}
 	
 	createListing(mls, function(result){

@@ -29,6 +29,7 @@ var mongoose = require("mongoose");
 	var errorSchema = new mongoose.Schema({
 		'error': String,
 		'mls': String,
+		'page': String,
 		'date': { type: Date, default: Date.now }
 	});
 
