@@ -34,7 +34,25 @@ var url = "http://www.utahrealestate.com/search/public.search?accuracy=&geocoded
 
 var command = process.argv[2];
 if(command == '-p' || command == '--page'){
-	page = process.argv[3];
+	page = Number(process.argv[3]);
+} else if(command == 'm' || command == '--mls'){
+	var mls = process.argv[3];
+	var listingUrl = "http://www.utahrealestate.com/report/public.single.report/report/detailed/listno/" + mls + "/scroll_to/" + mls;	
+   	 browser.visit(listingUrl, { debug: false, runScripts: false, waitFor: 9000 }, function(err){
+		 browser.wait(function(){
+	   		 if(err){
+	   			 console.log("failed to load " + url);
+	   			 console.log(err);
+	   		 } else{
+	   	         var body = browser.html('body');
+				 console.log(listingUrl);						
+	   	 		 scrapeDetails(body, listingId, function(){	
+					 console.log("DONE SCRAPING FOR " + listingId);
+					 //browser.close();//????????? free memory ??????????
+		   	     });
+	   		 }
+		 });				   		         
+   	 });
 } 
 
 //start here
@@ -106,8 +124,7 @@ function getLists(page){
 						   	     });
 					   		 }
 						 });				   		         
-				   	 });
-					
+				   	 });					
 					getDetails(listings.shift());
 				} else {					
 					return true;
