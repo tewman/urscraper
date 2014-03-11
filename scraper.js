@@ -80,7 +80,6 @@ if(command == '-p' || command == '--page'){
 var url = "http://www.utahrealestate.com/search/public.search?accuracy=&geocoded=&box=&htype=&lat=&lng=&geolocation=&type=1&listprice1=&listprice2=&proptype=&state=ut&tot_bed1=&tot_bath1=&tot_sqf1=&dim_acres1=&yearblt1=&cap_garage1=&style=&o_style=4&opens=&accessibility=&o_accessibility=32&sort=listprice%20DESC";
 //start here
 function start(){
-	console.log("instart");
 	var url = "http://www.utahrealestate.com/search/public.search?accuracy=&geocoded=&box=&htype=&lat=&lng=&geolocation=&type=1&listprice1=&listprice2=&proptype=&state=ut&tot_bed1=&tot_bath1=&tot_sqf1=&dim_acres1=&yearblt1=&cap_garage1=&style=&o_style=4&opens=&accessibility=&o_accessibility=32&sort=listprice%20DESC";
 	browser.visit(url, {debug: false, runScripts: false, waitFor: 6000}, function(){
 		var $ = cheerio.load(browser.html('body'), {
@@ -88,7 +87,9 @@ function start(){
 		});	
 		numPages = $('#page-selector option').toArray().length;	
 		console.log('numPages: ' + numPages);
-		series(function(){});
+		series(function(){
+			console.log('done start()')
+		});
 	});
 }
 
@@ -103,7 +104,7 @@ function series(callback){
 			console.log("WORKING ON LISTINGS PAGE " + page);
 			getLists(page);
 			page += 1;
-			return series(page);
+			return series();
 		});
 	} else {
 		return final();
@@ -143,21 +144,21 @@ function getLists(page){
 					   			 console.log(err);
 					   		 } else{
 					   	         var body = browser.html('body');
-								 console.log(listingUrl);						
-					   	 		 scrapeDetails(body, listingId, function(err){	
-									 if(err){								 		
-				 						error = new theError()								 		
-				 				 		error.error = err;
-				 				 		error.mls = listingId;
-				 				 		error.page = page;
-				 				 		error.save();
-				 				 		console.log(err);
-										console.log("Re-scrape " + listingId);
-									 } else {
-									 	console.log("DONE SCRAPING FOR " + listingId);
-								 	}
-									 //browser.close();//????????? free memory ??????????
-						   	     });
+								 console.log(listingUrl);									 
+						   	 		 scrapeDetails(body, listingId, function(err){	
+										 if(err){								 		
+					 						error = new theError()								 		
+					 				 		error.error = err;
+					 				 		error.mls = listingId;
+					 				 		error.page = page;
+					 				 		error.save();
+					 				 		console.log(err);
+											console.log("Re-scrape " + listingId);
+										 } else {
+										 	console.log("DONE SCRAPING FOR " + listingId);
+									 	}
+										 //browser.close();//????????? free memory ??????????
+							   	     });				   	 		 
 					   		 }
 						 });				   		         
 				   	 });					
@@ -174,7 +175,6 @@ function getLists(page){
 function scrapeDetails(body, listingId, callback) { 
 	
 	console.log("SCRAPING: " + listingId);
-	//console.log(body);
 	var thisAgent = new theAgents();
 	var thisBroker = new theBroker();
 	
@@ -187,8 +187,7 @@ function scrapeDetails(body, listingId, callback) {
 	var details = $('h2.public-detailed').html();
 	
 	//// Price, Address, MLS #, Type and style, year built
-	//console.log(details);
- 	//console.log(browser.xpath("//div[@id='public-report-wrap']/table/tbody/tr/td/table/tbody/tr[2]/td/p[2]"));
+
 	try {
 		var someDetails = $('.public-detail-overview-b').contents();
 		var mls = someDetails[2].data.trim();
