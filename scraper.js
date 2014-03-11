@@ -95,7 +95,7 @@ function getLists(page){
 								 console.log(listingUrl);						
 					   	 		 scrapeDetails(body, listingId, function(){	
 									 console.log("DONE SCRAPING FOR " + listingId);
-									 browser.close();//????????? free memory ??????????
+									 //browser.close();//????????? free memory ??????????
 						   	     });
 					   		 }
 						 });				   		         
