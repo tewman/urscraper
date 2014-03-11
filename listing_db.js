@@ -25,6 +25,11 @@ var mongoose = require("mongoose");
 		        "zip": String
 		    }
 	);
+	
+	var errorSchema = new mongoose.Schema({
+		'error': String,
+		'mls': String
+	});
 
 	var listingSchema = new mongoose.Schema(
 		{
@@ -174,10 +179,12 @@ var mongoose = require("mongoose");
 	var theListing = mongoose.model('theListing', listingSchema);
 	var theAgents = mongoose.model('theAgent', agentsSchema);
 	var theBroker = mongoose.model('theBroker', brokerSchema);
+	var theError = mongoose.model('theError', errorSchema);
 
 
 module.exports = {
 	theListing: theListing,
 	theAgents: theAgents,
-	theBroker: theBroker
+	theBroker: theBroker,
+	theError: theError
 };

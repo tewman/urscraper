@@ -12,6 +12,7 @@ db.on('open', function(){
 var theListing = require("./listing_db").theListing;
 var theAgents = require("./listing_db").theAgents;
 var theBroker = require("./listing_db").theBroker;
+var theError = require("./listing_db").theError;
 
 function async(arg, callback) {
   console.log('do something in \''+arg+'\', seconds');
@@ -89,21 +90,19 @@ function getLists(page){
 					   		 if(err){
 					   			 console.log("failed to load " + url);
 					   			 console.log(err);
+					   		 } else{
+					   	         var body = browser.html('body');
+								 console.log(listingUrl);						
+					   	 		 scrapeDetails(body, listingId, function(){	
+									 console.log("DONE SCRAPING FOR " + listingId);
+									 browser.close();//????????? free memory ??????????
+						   	     });
 					   		 }
-					   		 browser.wait(function(){
-//								 browser.clickLink("Next",function(){									 
-						   	         var body = browser.html('body');
-									 console.log(listingUrl);						
-						   	 		 scrapeDetails(body, listingId, function(){	
-										 console.log("DONE SCRAPING FOR " + listingId);			   	 		 				   			 
-						   	 	    });
-//								});
-					   		 });
 						 });				   		         
 				   	 });
 					
 					getDetails(listings.shift());
-				} else {
+				} else {					
 					return true;
 				}
 			});
@@ -113,6 +112,7 @@ function getLists(page){
 
 //scrape the listing's page for listing info
 function scrapeDetails(body, listingId, callback) { 
+	
 	console.log("SCRAPING: " + listingId);
 	//console.log(body);
 	var thisAgent = new theAgents();
@@ -129,11 +129,20 @@ function scrapeDetails(body, listingId, callback) {
 	//// Price, Address, MLS #, Type and style, year built
 	//console.log(details);
  	//console.log(browser.xpath("//div[@id='public-report-wrap']/table/tbody/tr/td/table/tbody/tr[2]/td/p[2]"));
-	var someDetails = $('.public-detail-overview-b').contents();
-	var mls = someDetails[2].data.trim();
-	var proptype = someDetails[6].data;
-	var yearBuilt = someDetails[8].data;
-	var start = details.indexOf("<span>$");
+	try {
+		var someDetails = $('.public-detail-overview-b').contents();
+		var mls = someDetails[2].data.trim();
+		var proptype = someDetails[6].data;
+		var yearBuilt = someDetails[8].data;
+		var start = details.indexOf("<span>$");
+	} catch (e){
+		var error = new theError();
+		error.error = e;
+		error.mls = listingId;
+		error.save();
+		console.log(e);
+		callback();
+	}
 	
 	createListing(mls, function(result){
 			var thisListing = result			
