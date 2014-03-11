@@ -2,8 +2,8 @@ var Browser = require("zombie");
 var cheerio = require("cheerio");
 var mongoose = require('mongoose');
 
-mongoose.connect('mongodb://tpUser:over8ed@ds033569.mongolab.com:33569/heroku_app22705925');
-//mongoose.connect('mongodb://localhost/realestate');
+//mongoose.connect('mongodb://tpUser:over8ed@ds033569.mongolab.com:33569/heroku_app22705925');
+mongoose.connect('mongodb://localhost/realestate');
 var Schema = mongoose.Schema;
 var db = mongoose.connection;
 db.on('open', function(){
@@ -145,20 +145,20 @@ function getLists(page){
 					   		 } else{
 					   	         var body = browser.html('body');
 								 console.log(listingUrl);									 
-						   	 		 scrapeDetails(body, listingId, function(err){	
-										 if(err){								 		
-					 						error = new theError()								 		
-					 				 		error.error = err;
-					 				 		error.mls = listingId;
-					 				 		error.page = page;
-					 				 		error.save();
-					 				 		console.log(err);
-											console.log("Re-scrape " + listingId);
-										 } else {
-										 	console.log("DONE SCRAPING FOR " + listingId);
-									 	}
-										 //browser.close();//????????? free memory ??????????
-							   	     });				   	 		 
+					   	 		 scrapeDetails(body, listingId, function(err){	
+									 if(err){								 		
+				 						error = new theError()								 		
+				 				 		error.error = err;
+				 				 		error.mls = listingId;
+				 				 		error.page = page;
+				 				 		error.save();
+				 				 		console.log(err);
+										console.log("Re-scrape " + listingId);
+									 } else {
+									 	console.log("DONE SCRAPING FOR " + listingId);
+								 	}
+									 //browser.close();//????????? free memory ??????????
+						   	     });				   	 		 
 					   		 }
 						 });				   		         
 				   	 });					
@@ -195,16 +195,19 @@ function scrapeDetails(body, listingId, callback) {
 		var yearBuilt = someDetails[8].data;
 		var start = details.indexOf("<span>$");
 	} catch (err){		
-		callback(err);
+		callback(new Error(err));
 	}
 	
 	createListing(mls, function(result){
+		try {
 			var thisListing = result			
 			thisListing.price = details.substring(start + 7, details.indexOf("</span>", start)).trim().replace(/,/g,'');
 			thisListing.mlsid = 'wurmls' + mls.trim();
 			thisListing.homeType = proptype.trim();
 			thisListing.year = yearBuilt.trim();		
-
+		} catch (err){		
+			callback(new Error(err));
+		}
 			var loct = $('.view-map>a').attr('onclick');
 			var addinfo = loct.split('/');
 			for(var i in addinfo){
@@ -566,7 +569,7 @@ function scrapeDetails(body, listingId, callback) {
 				callback(result);
 			}
 			if(result == null){				
-				// console.log("NO LISTING FOUND, CREATING A NEW ONE FOR: " + thisid);
+				 console.log("NO LISTING FOUND, CREATING A NEW ONE FOR: " + thisid);
 // 				console.log(query);
 				result = new theListing();
 				callback(result);
