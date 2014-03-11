@@ -1,4 +1,4 @@
-var util = require('util');
+//var util = require('util');
 
 var Browser = require("zombie");
 var cheerio = require("cheerio");

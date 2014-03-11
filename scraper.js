@@ -31,11 +31,18 @@ var numPages = 0;
 browser = new Browser();
 timeout = 10000;
 var url = "http://www.utahrealestate.com/search/public.search?accuracy=&geocoded=&box=&htype=&lat=&lng=&geolocation=&type=1&listprice1=&listprice2=&proptype=&state=ut&tot_bed1=&tot_bath1=&tot_sqf1=&dim_acres1=&yearblt1=&cap_garage1=&style=&o_style=4&opens=&accessibility=&o_accessibility=32&sort=listprice%20DESC";
+
+var command = process.argv[2];
+if(command == '-p' || command == '--page'){
+	page = process.argv[3];
+} 
+
+//start here
 browser.visit(url, {debug: false, runScripts: false, waitFor: 6000}, function(){
 	var $ = cheerio.load(browser.html('body'), {
 		normalizeWhitespace: true
 	});	
-	page = 1;
+	//page = 1;
 	numPages = $('#page-selector option').toArray().length;	
 	console.log(numPages);
 	series();
