@@ -208,6 +208,8 @@ function scrapeDetails(body, listingId, callback) {
 		} catch (err){		
 			callback(new Error(err));
 		}
+		
+		try{
 			var loct = $('.view-map>a').attr('onclick');
 			var addinfo = loct.split('/');
 			for(var i in addinfo){
@@ -232,6 +234,9 @@ function scrapeDetails(body, listingId, callback) {
 					thisListing.location.lon = addinfo[i];
 				}
 			}
+		} catch (err){		
+			callback(new Error(err));
+		}
 
 			//// Square footage	and level infos
 			setSqftBRBR();
@@ -273,286 +278,342 @@ function scrapeDetails(body, listingId, callback) {
 	
 			// get and save photo address
 			function setPhotos(){
-				var photos = [];
-				$('.slide-images').children().each(function(i,n){
-					$(n).children().each(function(ii,nn){
-						var src = $(nn).attr('src');
-						photos.push({address: src});
-						//thisListing.photos.push({address: src});
+				try{
+					var photos = [];
+					$('.slide-images').children().each(function(i,n){
+						$(n).children().each(function(ii,nn){
+							var src = $(nn).attr('src');
+							photos.push({address: src});
+							//thisListing.photos.push({address: src});
+						});
 					});
-				});
-				thisListing.photos = photos;
+					thisListing.photos = photos;
+				} catch (err){		
+					callback(new Error(err));
+				}
 			}
 	
 			// Set Square Footage and bedroom and bathroom info
 			function setSqftBRBR(){
-				var smallestLevel = 100;
-				thisListing.levels = new Array(); //overwrites all levels.
+				try{
+					var smallestLevel = 100;
+					thisListing.levels = new Array(); //overwrites all levels.
 				
-				//sqft per floor
-				//will created a level object for each floor
-				var squareFeetPerFloor = $('h4:contains("Square Feet On Each Floor")').next().find('li').each(function(i,n){			
-					var sqft = $(this).html().trim();
-					var sqftSplit = sqft.split(': ');
+					//sqft per floor
+					//will created a level object for each floor
+					var squareFeetPerFloor = $('h4:contains("Square Feet On Each Floor")').next().find('li').each(function(i,n){			
+						var sqft = $(this).html().trim();
+						var sqftSplit = sqft.split(': ');
 			
-					if(sqftSplit[0] == 'Total'){
-						thisListing.totalSquareFeet = sqftSplit[1];
-					} else {
-						var newLevel = new Object();
-						newLevel.squareFeet = sqftSplit[1].substring(0, sqftSplit[1].indexOf(' '));
-						newLevel.level = sqftSplit[0];	
-						thisListing.levels.push(newLevel);				
-					}					
-				});
+						if(sqftSplit[0] == 'Total'){
+							thisListing.totalSquareFeet = sqftSplit[1];
+						} else {
+							var newLevel = new Object();
+							newLevel.squareFeet = sqftSplit[1].substring(0, sqftSplit[1].indexOf(' '));
+							newLevel.level = sqftSplit[0];	
+							thisListing.levels.push(newLevel);				
+						}					
+					});
 		
-				//bedrooms
-				var rooms = $('h4:contains("Rooms Include")').next();
-				rooms.find('li').html().trim().
-					substring(0, rooms.find('li').html().trim().indexOf(" Total Bedrooms"));
+					//bedrooms
+					var rooms = $('h4:contains("Rooms Include")').next();
+					rooms.find('li').html().trim().
+						substring(0, rooms.find('li').html().trim().indexOf(" Total Bedrooms"));
 
-				$('ul li:contains("Bedrooms")').next().children().each(function(i, n) {
-		 		    var levelName = '';
-					var splitRooms = ($(n).html()).split(':');			
-					var level = splitRooms[0];						
-					var bedNum = splitRooms[1].trim();
-					//find the level, add the bedroom and number
-					for(var i in thisListing.levels){
-						if(thisListing.levels[i].level == level){
-							thisListing.levels[i].beds = bedNum
-						}
-					}
-				});
-		
-				//bathrooms		
-				$('ul li:contains("Bathrooms")').html().trim().
-					substring(0, $('ul li:contains("Bathrooms")').html().trim().indexOf(" Total Bathrooms"));
-		
-				var allBathrooms = new Object();
-				var bathrooms = $('ul li:contains("Bathrooms")').next().children().each(function(i, n) {
-					var splitRooms = ($(n).html()).split(':');			
-					var level = splitRooms[0].trim();
-		
-					var bathroom = splitRooms[1].trim();
-					bathroomNum = bathroom.substring(0, bathroom.indexOf(' '));
-					bathroomType = bathroom.substring(bathroom.indexOf(' ')).trim();
-
-					if(bathroomType == 'Full'){ bathroomType = 'bathsFull'} else
-					if(bathroomType == 'Half'){ bathroomType = 'bathsHalf'} else
-					{(bathroomType = 'bathsThreeQuarter');}
-					//find the level, add the rooms and number
-					for(var i in thisListing.levels){
-						if(thisListing.levels[i].level == level){
-							thisListing.levels[i][bathroomType] = bathroomNum
-						}
-					}			
-				});
-		
-				//other rooms
-				var numOtherRooms = $('ul li:contains("Other Rooms")').next().children().each(function(i, n) {
-					//get floors
-					var floors = $(n).html().trim().split(/[:]/g);
-					var where = floors[0]
-					var roomsFloor = floors[1]
-					var floorRooms = roomsFloor.split(/[;*]/g);
-
-					//data['otherRooms'] = new Array();
-					var dataFloor = new Object();
-					var dataFloorRooms = new Array();
-
-					for (var i in floorRooms) {
-						if (typeof floorRooms[i] !== 'undefined' && floorRooms[i] != '') {
-							var roomm = new Object();
-							var roommNum = floorRooms[i].substring(0, floorRooms[i].trim().indexOf(' ') + 1);
-							var roommName = (floorRooms[i].substring(floorRooms[i].trim().indexOf(' ') + 1)).trim();
-							if(roommName == 'Family Rm(s)'){
-								roommName = 'familyRooms';
-							} else if(roommName == 'Kitchen(s)'){
-								roommName = 'kitchenB';
-							} else if(roommName == 'Laundry Rm(s)'){
-								roommName = 'laundryRooms';
-							} else if(roommName == 'Formal Living'){
-								roommName = 'formalLivingRooms';
-							} else if(roommName == 'Formal Dining'){
-								roommName = 'diningF';
-							} else if(roommName == 'Semiformal Dining'){
-								roommName = 'diningS';
-							} else if(roommName == 'Bar(s)'){
-								roommName = 'bar';
-							} else if(roommName == 'Den(s)'){
-								roommName = 'dens';
-							} else if(roommName == 'fireplace(s)'){
-								roommName = 'fireplaces';
+					$('ul li:contains("Bedrooms")').next().children().each(function(i, n) {
+			 		    var levelName = '';
+						var splitRooms = ($(n).html()).split(':');			
+						var level = splitRooms[0];						
+						var bedNum = splitRooms[1].trim();
+						//find the level, add the bedroom and number
+						for(var i in thisListing.levels){
+							if(thisListing.levels[i].level == level){
+								thisListing.levels[i].beds = bedNum
 							}
-							//find the level, add the room and number
-							for(var i in thisListing.levels){
-								if(thisListing.levels[i].level == where){
-									thisListing.levels[i][roommName] = roommNum
+						}					
+					});
+				} catch (err){		
+					callback(new Error(err));
+				}
+				
+				try{
+				//bathrooms		
+					$('ul li:contains("Bathrooms")').html().trim().
+						substring(0, $('ul li:contains("Bathrooms")').html().trim().indexOf(" Total Bathrooms"));
+		
+					var allBathrooms = new Object();
+					var bathrooms = $('ul li:contains("Bathrooms")').next().children().each(function(i, n) {
+						var splitRooms = ($(n).html()).split(':');			
+						var level = splitRooms[0].trim();
+		
+						var bathroom = splitRooms[1].trim();
+						bathroomNum = bathroom.substring(0, bathroom.indexOf(' '));
+						bathroomType = bathroom.substring(bathroom.indexOf(' ')).trim();
+
+						if(bathroomType == 'Full'){ bathroomType = 'bathsFull'} else
+						if(bathroomType == 'Half'){ bathroomType = 'bathsHalf'} else
+						{(bathroomType = 'bathsThreeQuarter');}
+						//find the level, add the rooms and number
+						for(var i in thisListing.levels){
+							if(thisListing.levels[i].level == level){
+								thisListing.levels[i][bathroomType] = bathroomNum
+							}
+						}			
+					});
+				} catch (err){		
+					callback(new Error(err));
+				}
+		
+				try{
+					//other rooms
+					var numOtherRooms = $('ul li:contains("Other Rooms")').next().children().each(function(i, n) {
+						//get floors
+						var floors = $(n).html().trim().split(/[:]/g);
+						var where = floors[0]
+						var roomsFloor = floors[1]
+						var floorRooms = roomsFloor.split(/[;*]/g);
+
+						//data['otherRooms'] = new Array();
+						var dataFloor = new Object();
+						var dataFloorRooms = new Array();
+
+						for (var i in floorRooms) {
+							if (typeof floorRooms[i] !== 'undefined' && floorRooms[i] != '') {
+								var roomm = new Object();
+								var roommNum = floorRooms[i].substring(0, floorRooms[i].trim().indexOf(' ') + 1);
+								var roommName = (floorRooms[i].substring(floorRooms[i].trim().indexOf(' ') + 1)).trim();
+								if(roommName == 'Family Rm(s)'){
+									roommName = 'familyRooms';
+								} else if(roommName == 'Kitchen(s)'){
+									roommName = 'kitchenB';
+								} else if(roommName == 'Laundry Rm(s)'){
+									roommName = 'laundryRooms';
+								} else if(roommName == 'Formal Living'){
+									roommName = 'formalLivingRooms';
+								} else if(roommName == 'Formal Dining'){
+									roommName = 'diningF';
+								} else if(roommName == 'Semiformal Dining'){
+									roommName = 'diningS';
+								} else if(roommName == 'Bar(s)'){
+									roommName = 'bar';
+								} else if(roommName == 'Den(s)'){
+									roommName = 'dens';
+								} else if(roommName == 'fireplace(s)'){
+									roommName = 'fireplaces';
+								}
+								//find the level, add the room and number
+								for(var i in thisListing.levels){
+									if(thisListing.levels[i].level == where){
+										thisListing.levels[i][roommName] = roommNum
+									}
 								}
 							}
 						}
-					}
-				});
+					});
+				} catch (err){		
+					callback(new Error(err));
+				}
 			}
 	
 			// Set Schools
 			function setSchools(){
-				thisListing.schools = new Array();
-				var schoolsArray = new Array();
-				var schools = $('h4:contains("Local Schools")').next().find('li').each(function(i,n){		
-			    	var schoolInfo = $(this).text();					
-					var schoolSplit = schoolInfo.split(":");
+				try{
+					thisListing.schools = new Array();
+					var schoolsArray = new Array();
+					var schools = $('h4:contains("Local Schools")').next().find('li').each(function(i,n){		
+				    	var schoolInfo = $(this).text();					
+						var schoolSplit = schoolInfo.split(":");
 
-					var schoolData = new Object();
-					schoolData.schoolType = schoolSplit[0].trim();
-					schoolData.name = schoolSplit[1].trim();	
-					thisListing.schools.push(schoolData);
-				});
+						var schoolData = new Object();
+						schoolData.schoolType = schoolSplit[0].trim();
+						schoolData.name = schoolSplit[1].trim();	
+						thisListing.schools.push(schoolData);
+					});
+				} catch (err){		
+					callback(new Error(err));
+				}
 			}
 	
 			// Set Agents
 			 function setAgents(){				
-				thisListing.unconfirmedAgents = []; //overwrite all unconfirmed agents
+				 try{
+					thisListing.unconfirmedAgents = []; //overwrite all unconfirmed agents
 				
-		 		var agentInfo = $('.public-agent-wrap tr td p').contents();
-		 		var agent = agentInfo[3].data.trim();
-		 		// seperate names
-		 		agent = agent.split(' ');
-		 		var agentFirstName = agent[0];
-		 		var agentLastName = agent[agent.length - 1];
-		 		var agentMiddleName = '';
-		 		if(agent.length == 3){
-		 			agentMiddleName = agent[1];
-		 		}
-		 		var agentPhone = agentInfo[7].data.trim();
-		 		var agentOfficePhone = (agentInfo[14].type != 'text') ? '' : agentInfo[14].data.trim();
-		 		var agentEmail = 'n/a';
-		 		newAgent = new Object();
-				newAgent.firstName = agentFirstName;
-			    newAgent.lastName =  agentLastName;
-		        newAgent.middleName = agentMiddleName;
-		        newAgent.phone = agentPhone;
-				newAgent.email = agentEmail;
-			    newAgent.officePhones = agentOfficePhone;
-			 	newAgent.office = '';
-		        newAgent.primary = true;
+			 		var agentInfo = $('.public-agent-wrap tr td p').contents();
+			 		var agent = agentInfo[3].data.trim();
+			 		// seperate names
+			 		agent = agent.split(' ');
+			 		var agentFirstName = agent[0];
+			 		var agentLastName = agent[agent.length - 1];
+			 		var agentMiddleName = '';
+			 		if(agent.length == 3){
+			 			agentMiddleName = agent[1];
+			 		}
+			 		var agentPhone = agentInfo[7].data.trim();
+			 		var agentOfficePhone = (agentInfo[14].type != 'text') ? '' : agentInfo[14].data.trim();
+			 		var agentEmail = 'n/a';
+			 		newAgent = new Object();
+					newAgent.firstName = agentFirstName;
+				    newAgent.lastName =  agentLastName;
+			        newAgent.middleName = agentMiddleName;
+			        newAgent.phone = agentPhone;
+					newAgent.email = agentEmail;
+				    newAgent.officePhones = agentOfficePhone;
+				 	newAgent.office = '';
+			        newAgent.primary = true;
 		
-				thisListing.unconfirmedAgents.push(newAgent);	
+					thisListing.unconfirmedAgents.push(newAgent);	
+				} catch (err){		
+					callback(new Error(err));
+				}
 		 	}
 	
 			// Exterior Features
 			function setExteriorFeatures(){
-				var exteriorArray = new Array();
-				var exterior = $('h4:contains("Exterior Features Include")').next().find('li').each(function(i,n){
-			    	var exteriorInfo = $(this).text();
-					var exteriorData = new Object();		
-					var exteriorSplit = exteriorInfo.split(":");
-					var typeObject = exteriorSplit[0].trim();
-					var infoObject = (typeof exteriorSplit[1] === 'undefined') ? '' : exteriorSplit[1].trim();
-					exteriorData = typeObject + ": " + infoObject;
-					exteriorArray.push(exteriorData);
-				});
-				//
-				thisListing.exteriorFeatures = exteriorArray.join('; ');
+				try{
+					var exteriorArray = new Array();
+					var exterior = $('h4:contains("Exterior Features Include")').next().find('li').each(function(i,n){
+				    	var exteriorInfo = $(this).text();
+						var exteriorData = new Object();		
+						var exteriorSplit = exteriorInfo.split(":");
+						var typeObject = exteriorSplit[0].trim();
+						var infoObject = (typeof exteriorSplit[1] === 'undefined') ? '' : exteriorSplit[1].trim();
+						exteriorData = typeObject + ": " + infoObject;
+						exteriorArray.push(exteriorData);
+					});
+					//
+					thisListing.exteriorFeatures = exteriorArray.join('; ');
+				} catch (err){		
+					callback(new Error(err));
+				}
 			}
 
 			// Interior Features
 			function setInteriorFeatures(){
-				var interiorArray = new Array();
-				var interior = $('h4:contains("Interior Features Include")').next().find('li').each(function(i,n){
-			    	var interiorInfo = $(this).text();
-					var interiorData = new Object();		
-					var interiorSplit = interiorInfo.split(":");
-					var typeObject = interiorSplit[0].trim();
-					var infoObject =  (typeof interiorSplit[1] === 'undefined') ? '' : interiorSplit[1].trim();
-					interiorData = typeObject + ": " + infoObject;
-					interiorArray.push(interiorData);
-				});
-				//
-				thisListing.interiorFeatures = interiorArray.join('; ');
+				try{
+					var interiorArray = new Array();
+					var interior = $('h4:contains("Interior Features Include")').next().find('li').each(function(i,n){
+				    	var interiorInfo = $(this).text();
+						var interiorData = new Object();		
+						var interiorSplit = interiorInfo.split(":");
+						var typeObject = interiorSplit[0].trim();
+						var infoObject =  (typeof interiorSplit[1] === 'undefined') ? '' : interiorSplit[1].trim();
+						interiorData = typeObject + ": " + infoObject;
+						interiorArray.push(interiorData);
+					});
+					//
+					thisListing.interiorFeatures = interiorArray.join('; ');
+				} catch (err){		
+					callback(new Error(err));
+				}
 			}
 
 			// Other Features
 			function setOtherFeatures(){
-				var otherArray = new Array();
-				var other = $('h4:contains("Other Features Include")').next().find('li').each(function(i,n){
-			    	var otherInfo = $(this).text();
-					var otherData = new Object();		
-					var otherSplit = otherInfo.split(":");
-					var typeObject = otherSplit[0].trim();
-					var infoObject = (typeof otherSplit[1] === 'undefined') ? '' : otherSplit[1].trim();
-					otherData = typeObject + ": " + infoObject;
-					otherArray.push(otherData);
-				});
-				//
-				thisListing.otherFeatures = otherArray.join('; ');
+				try{
+					var otherArray = new Array();
+					var other = $('h4:contains("Other Features Include")').next().find('li').each(function(i,n){
+				    	var otherInfo = $(this).text();
+						var otherData = new Object();		
+						var otherSplit = otherInfo.split(":");
+						var typeObject = otherSplit[0].trim();
+						var infoObject = (typeof otherSplit[1] === 'undefined') ? '' : otherSplit[1].trim();
+						otherData = typeObject + ": " + infoObject;
+						otherArray.push(otherData);
+					});
+					//
+					thisListing.otherFeatures = otherArray.join('; ');
+				} catch (err){		
+					callback(new Error(err));
+				}
 			}
 
 			// Inclusions
 			function setInclusions(){
-				var inclusionsArray = new Array();
-				theInclusionArray = new Array();
-				var inclusions = $('h4:contains("Inclusions")').next().find('li').each(function(i,n){
-			    	var inclusionsInfo = $(this).text();
-					var inclusionsData = new Object();		
-					var inclusionsSplit = inclusionsInfo.split(":");
-					inclusionsData['type'] = inclusionsSplit[0].trim();		
-					inclusionsArray.push(inclusionsData);
-					theInclusionArray.push(inclusionsSplit[0]);
-				});
-				//
-				thisListing.inclusions = theInclusionArray.join("; ");
+				try{
+					var inclusionsArray = new Array();
+					theInclusionArray = new Array();
+					var inclusions = $('h4:contains("Inclusions")').next().find('li').each(function(i,n){
+				    	var inclusionsInfo = $(this).text();
+						var inclusionsData = new Object();		
+						var inclusionsSplit = inclusionsInfo.split(":");
+						inclusionsData['type'] = inclusionsSplit[0].trim();		
+						inclusionsArray.push(inclusionsData);
+						theInclusionArray.push(inclusionsSplit[0]);
+					});
+					//
+					thisListing.inclusions = theInclusionArray.join("; ");
+				} catch (err){		
+					callback(new Error(err));
+				}
 			}
 
 			// Zoning
 			function setZoning(){
-				var zoningArray = new Array();
-				var zonings = $('h4:contains("Zoning Information")').next().find('li').each(function(i,n){
-			    	var zoningInfo = $(this).text();
-					var zoningData = new Object();		
-					var zoningSplit = zoningInfo.split(":");
-					//
-					thisListing.zoning = zoningSplit[1].trim();
-				});
+				try{
+					var zoningArray = new Array();
+					var zonings = $('h4:contains("Zoning Information")').next().find('li').each(function(i,n){
+				    	var zoningInfo = $(this).text();
+						var zoningData = new Object();		
+						var zoningSplit = zoningInfo.split(":");
+						//
+						thisListing.zoning = zoningSplit[1].trim();
+					});
+				} catch (err){		
+					callback(new Error(err));
+				}
 			}
 
 			//// Owner type
 			function setOwnerType(){
-				var ownerArray = new Array();
-				var owners = $('h4:contains("Owner Type")').next().find('li').each(function(i,n){
-			    	var ownerInfo = $(this).text();
-					var ownerData = new Object();		
-					var ownerSplit = ownerInfo.split(":");
-					//
-					thisListing.ownerType = (typeof ownerSplit[0] === 'undefined') ? '' : ownerSplit[0].trim();			
-				});
+				try{
+					var ownerArray = new Array();
+					var owners = $('h4:contains("Owner Type")').next().find('li').each(function(i,n){
+				    	var ownerInfo = $(this).text();
+						var ownerData = new Object();		
+						var ownerSplit = ownerInfo.split(":");
+						//
+						thisListing.ownerType = (typeof ownerSplit[0] === 'undefined') ? '' : ownerSplit[0].trim();			
+					});
+				} catch (err){		
+					callback(new Error(err));
+				}
 			}
 	
 			//lotSize
 			function setLotSize(){
-				var lotsizeArray = new Array();
-				var lotsize = $('h4:contains("Lot Size In Acres")').next().find('li').each(function(i,n){
-			    	var lotsizeInfo = $(this).text();
-					var lotsizeData = new Object();		
-					var lotsizeSplit = lotsizeInfo.split(":");
-					//
-					thisListing.acres = (typeof lotsizeSplit[1] === 'undefined') ? '' : lotsizeSplit[1].trim();
-					//
-				});
+				try{
+					var lotsizeArray = new Array();
+					var lotsize = $('h4:contains("Lot Size In Acres")').next().find('li').each(function(i,n){
+				    	var lotsizeInfo = $(this).text();
+						var lotsizeData = new Object();		
+						var lotsizeSplit = lotsizeInfo.split(":");
+						//
+						thisListing.acres = (typeof lotsizeSplit[1] === 'undefined') ? '' : lotsizeSplit[1].trim();
+						//
+					});
+				} catch (err){		
+					callback(new Error(err));
+				}
 			}
 			
 			//save the listing
 			function saveListing(callback){	
-				console.log("SAVING...SAVING...SAVING...SAVING...SAVING...SAVING...SAVING...SAVING...")	
-				thisListing.save(function(err, listing){
-					if(err){
-						console.log("Error saving the listing");
-						console.log(err);
-						console.log(thisListing);
-					} else {
-						thisListing._id = listing._id;
-						callback();
-					}
-				})
+				try{
+					console.log("SAVING...SAVING...SAVING...SAVING...SAVING...SAVING...SAVING...SAVING...")	
+					thisListing.save(function(err, listing){
+						if(err){
+							console.log("Error saving the listing");
+							console.log(err);
+							console.log(thisListing);
+						} else {
+							thisListing._id = listing._id;
+							callback();
+						}
+					});
+				} catch (err){		
+					callback(new Error(err));
+				}
 			}
 	});
 	
