@@ -115,7 +115,7 @@ function series(callback){
 function getLists(page){
 	console.log("LISTINGS FOR PAGE " + page);
 	var listUrl = url + "&page=" + page;	
-	browser.visit(listUrl, {debug: false, runScripts: false, waitFor: 3000}, function(){
+	browser.visit(listUrl, {debug: false, runScripts: false, waitFor: 5000}, function(){
 		var $$$ = cheerio.load(browser.html('body'), {
 			normalizeWhitespace: true
 		});
@@ -239,37 +239,81 @@ function scrapeDetails(body, listingId, callback) {
 		}
 
 			//// Square footage	and level infos
-			setSqftBRBR();
+			setSqftBRBR(function(err){
+				if(err){
+					callback(err);
+				}
+			});
 		
 			//// schools
-			setSchools();
+			setSchools(function(err){
+				if(err){
+					callback(err);
+				}
+			});
 		
 			//// agent info
-			setAgents();
+			setAgents(function(err){
+				if(err){
+					callback(err);
+				}
+			});
 
 			////Interior Features
-			setInteriorFeatures();
+			setInteriorFeatures(function(err){
+				if(err){
+					callback(err);
+				}
+			});
 	
 			////Exterior Features
-			setExteriorFeatures();
+			setExteriorFeatures(function(err){
+				if(err){
+					callback(err);
+				}
+			});
 	
 			//// Other Features
-			setOtherFeatures();
+			setOtherFeatures(function(err){
+				if(err){
+					callback(err);
+				}
+			});
 	
 			//// Inclusions
-			setInclusions();	
+			setInclusions(function(err){
+				if(err){
+					callback(err);
+				}
+			});	
 	
 			//// Zoning
-			setZoning();
+			setZoning(function(err){
+				if(err){
+					callback(err);
+				}
+			});
 
 			//// Owner type
-			setOwnerType();
+			setOwnerType(function(err){
+				if(err){
+					callback(err);
+				}
+			});
 	
 			//// Lot size
-			setLotSize();
+			setLotSize(function(err){
+				if(err){
+					callback(err);
+				}
+			});
 	
 			//// Photos
-			setPhotos();
+			setPhotos(function(err){
+				if(err){
+					callback(err);
+				}
+			});
 	
 			//// save listing
 			saveListing(function(){
