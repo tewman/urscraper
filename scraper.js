@@ -2,8 +2,8 @@ var Browser = require("zombie");
 var cheerio = require("cheerio");
 var mongoose = require('mongoose');
 
-mongoose.connect('mongodb://tpUser:over8ed@ds033569.mongolab.com:33569/heroku_app22705925');
-//mongoose.connect('mongodb://localhost/realestate');
+//mongoose.connect('mongodb://tpUser:over8ed@ds033569.mongolab.com:33569/heroku_app22705925');
+mongoose.connect('mongodb://localhost/realestate');
 var Schema = mongoose.Schema;
 var db = mongoose.connection;
 db.on('open', function() {
@@ -73,7 +73,7 @@ if (command == '-p' || command == '--page') {
                         error.mls = mls;
                         error.page = page;
                         error.save();
-                        console.log(err);
+                        console.log(err.stack);
                         console.log("Re-scrape " + mls);
                         process.exit(1);
                     } else {
@@ -159,7 +159,7 @@ function getLists(page) {
 
         function getDetails(listingsUrl) {
             async(7, function() {
-                if (listingsUrl) {
+                if (listingsUrl) {                    
                     listingId = listingsUrl.substring(listingsUrl.lastIndexOf("/") + 1);
                     listingUrl = "http://www.utahrealestate.com" + listingsUrl;
                     browser.visit(listingUrl, {debug: false, runScripts: false, waitFor: 10000}, function(err) {
@@ -257,7 +257,7 @@ function scrapeDetails(body, listingId, callback) {
                 } else if (addinfo[i] == 'zip') {
                     i++;
                     var tmpzip = decodeURIComponent(addinfo[i]).substr(0, addinfo[i].indexOf("'"));
-                    thisListing.zip = (' ' + tmpzip).subtring(1);
+                    thisListing.zip = (' ' + tmpzip).substring(1);
                 } else if (addinfo[i] == 'lat') {
                     i++;
                     thisListing.location.lat = addinfo[i];
