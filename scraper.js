@@ -181,14 +181,13 @@ function getLists(page) {
                                         console.log("Re-scrape " + listingId);
                                     } else {
                                         console.log("DONE SCRAPING FOR " + listingId);
-                                        getDetails(listings.shift());
                                     }
                                     //browser.close();//????????? free memory ??????????
                                 });
                             }
                         });
                     });
-                    
+                    getDetails(listings.shift());
                 } else {
                     return true;
                 }
