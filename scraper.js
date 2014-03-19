@@ -10,8 +10,8 @@ db.on('open', function() {
     console.log("db connected");
 });
 
-var lastHeap = null
-var memwatch = require('memwatch')
+//var lastHeap = null
+//var memwatch = require('memwatch')
 //memwatch.on('stats', function(info) {
 //    if (lastHeap) {
 //        var hd = lastHeap.end();
