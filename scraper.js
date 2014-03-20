@@ -99,12 +99,10 @@ if (command == '-p' || command == '--page') {
 //    zip = process.argv[[3]];
 //}
 
-//var url = "http://www.utahrealestate.com/search/public.search?accuracy=&geocoded=&box=&htype=&lat=&lng=&geolocation=&type=1&listprice1=&listprice2=&proptype=&state=ut&tot_bed1=&tot_bath1=&tot_sqf1=&dim_acres1=&yearblt1=&cap_garage1=&style=&o_style=4&opens=&accessibility=&o_accessibility=32&sort=listprice%20DESC";
-var url = "http://www.utahrealestate.com/search/public.search?accuracy=5&geocoded=84117&box=%257B%2522north%2522%253A40.6752699%252C%2522south%2522%253A40.637771%252C%2522east%2522%253A-111.80246299999999%252C%2522west%2522%253A-111.87253390000001%257D&htype=zip&lat=40.6618507&lng=-111.83897260000003&geolocation=Salt+Lake+City%2C+UT+84117&type=1&listprice1=&listprice2=&proptype=&state=ut&tot_bed1=&tot_bath1=&tot_sqf1=&dim_acres1=&yearblt1=&cap_garage1=&style=&o_style=4&opens=&accessibility=&o_accessibility=32";
+var url = "http://www.utahrealestate.com/search/public.search?accuracy=&geocoded=&box=&htype=&lat=&lng=&geolocation=&type=1&listprice1=&listprice2=&proptype=&state=ut&tot_bed1=&tot_bath1=&tot_sqf1=&dim_acres1=&yearblt1=&cap_garage1=&style=&o_style=4&opens=&accessibility=&o_accessibility=32&sort=listprice%20DESC";
 //start here
 function start() {
-    //url = "http://www.utahrealestate.com/search/public.search?accuracy=&geocoded=&box=&htype=&lat=&lng=&geolocation=&type=1&listprice1=&listprice2=&proptype=&state=ut&tot_bed1=&tot_bath1=&tot_sqf1=&dim_acres1=&yearblt1=&cap_garage1=&style=&o_style=4&opens=&accessibility=&o_accessibility=32&sort=listprice%20DESC";
-    url = "http://www.utahrealestate.com/search/public.search?accuracy=5&geocoded=84117&box=%257B%2522north%2522%253A40.6752699%252C%2522south%2522%253A40.637771%252C%2522east%2522%253A-111.80246299999999%252C%2522west%2522%253A-111.87253390000001%257D&htype=zip&lat=40.6618507&lng=-111.83897260000003&geolocation=Salt+Lake+City%2C+UT+84117&type=1&listprice1=&listprice2=&proptype=&state=ut&tot_bed1=&tot_bath1=&tot_sqf1=&dim_acres1=&yearblt1=&cap_garage1=&style=&o_style=4&opens=&accessibility=&o_accessibility=32";
+    url = "http://www.utahrealestate.com/search/public.search?accuracy=&geocoded=&box=&htype=&lat=&lng=&geolocation=&type=1&listprice1=&listprice2=&proptype=&state=ut&tot_bed1=&tot_bath1=&tot_sqf1=&dim_acres1=&yearblt1=&cap_garage1=&style=&o_style=4&opens=&accessibility=&o_accessibility=32&sort=listprice%20DESC";
     browser.visit(url, {debug: false, runScripts: false, waitFor: 6000}, function() {
         var $ = cheerio.load(browser.html('body'), {
             normalizeWhitespace: true
